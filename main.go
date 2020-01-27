@@ -21,15 +21,12 @@ type details struct {
 }
 
 func zConnect(socket gowebsocket.Socket, p details) {
-	var id = p.id
-	if id != "killstream" {
-		id = "corporation:" + id
-	}
 	socket.OnConnected = func(socket gowebsocket.Socket) {
-		log.Printf("Having a chat with zKillboard\nWebhook: %s\nID: %s", p.discordurl, id)
-		socket.SendText(fmt.Sprintf("{\"action\":\"sub\",\"channel\":\"%s\"}", id))
+		log.Printf("Having a chat with zKillboard\nWebhook: %s\nID: %s", p.discordurl, p.id)
+		socket.SendText(fmt.Sprintf("{\"action\":\"sub\",\"channel\":\"%s\"}", p.id))
 	}
 	socket.OnTextMessage = func(message string, socket gowebsocket.Socket) {
+		log.Println("RECV ", message)
 		url := handlemsg(message)
 		go postDiscord(url, p.discordurl)
 	}
@@ -37,13 +34,17 @@ func zConnect(socket gowebsocket.Socket, p details) {
 		log.Println("Stopped chatting with zKillboard")
 		return
 	}
+
+	socket.OnConnectError = func(err error, socket gowebsocket.Socket) {
+		log.Println(err)
+	}
 	socket.Connect()
 }
 
 func handlemsg(message string) string{
-	var msg map[string]map[string]string
+	var msg map[string]string
 	json.Unmarshal([]byte(message), &msg)
-	return msg["zkb"]["url"]
+	return msg["url"]
 }
 
 func postDiscord(zkillurl string, discordurl string) {
@@ -60,7 +61,7 @@ func postDiscord(zkillurl string, discordurl string) {
 func main() {
 	params := new(details)
 	flag.StringVar(&params.discordurl, "url", "", "Discord Webhook URL")
-	flag.StringVar(&params.id, "id", "killstream", "Corporation ID")
+	flag.StringVar(&params.id, "filter", "killstream", "zKillboard filter (see zKillboard Websocket docs)")
 	flag.Parse()
 	if params.discordurl != "" {
 		interrupt := make(chan os.Signal, 1)
