@@ -1,14 +1,10 @@
 * zkillhook
 #+begin_src
 Usage of ./zkillhook:
-  -id string
-    	Corporation ID (default "killstream")
+  -filter string
+    	zKillboard filter (see zKillboard Websocket docs) (default "killstream")
   -url string
     	Discord Webhook URL
 #+end_src
 
-TODO
-
-Support alliance, probably use zKill's RedisQ
-
-[[https://github.com/zKillboard/RedisQ][GitHub - zKillboard/RedisQ]]
+[[https://github.com/zKillboard/zKillboard/wiki/Websocket#filter][Available filters: zKillboard/zKillboard Wiki · GitHub]]
